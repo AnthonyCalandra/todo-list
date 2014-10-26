@@ -1,0 +1,17 @@
+# See https://atom.io/docs/latest/creating-a-package#menus for more details
+'context-menu':
+  '.overlayer':
+      'Enable Todo List': 'todo-list:toggle'
+
+'menu': [
+  {
+    'label': 'Packages'
+    'submenu': [
+      'label': 'Todo List'
+      'submenu': [
+        { 'label': 'Toggle', 'command': 'todo-list:toggle' }
+        { 'label': 'Toggle Todo List Side', 'command': 'todo-list:toggle-side' }
+      ]
+    ]
+  }
+]

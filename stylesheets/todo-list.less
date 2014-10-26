@@ -1,0 +1,89 @@
+@import "ui-variables";
+
+.todo-list-panel {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  cursor: default;
+  -webkit-user-select: none;
+  min-width: 100px;
+  width: 200px;
+  z-index: 2;
+
+  .todo-list-resize-handle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 10px;
+    cursor: col-resize;
+    z-index: 3;
+  }
+
+  &[data-show-on-right-side='true'] {
+    .todo-list-resize-handle {
+      left: -5px;
+    }
+  }
+
+  &[data-show-on-right-side='false'] {
+    .todo-list-resize-handle {
+      right: -5px;
+    }
+  }
+}
+
+.todo-list-scroller {
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+}
+
+.todo-list {
+  min-width: -webkit-min-content;
+  min-height: 100%;
+  padding-left: @component-icon-padding;
+  padding-right: @component-padding;
+  position: relative;
+
+  li {
+    padding: 0px 5px 0px 5px;
+  }
+
+  .complete {
+    color: @text-color-success !important;
+  }
+
+  .incomplete {
+    color: @text-color-error !important;
+  }
+
+  li:not(.head):hover {
+    background-color: @background-color-info;
+    color: @text-color-highlight !important;
+  }
+
+  li span.msg {
+    color: @text-color-highlight;
+  }
+
+  // This fixes #110, see that issue for more details
+  .entry:before {
+    content: '';
+    position: absolute;
+  }
+}
+
+hr {
+  margin: 0px;
+  padding: 0px;
+  border: 0;
+  border-top: 1px solid @scrollbar-color;
+}
+
+.platform-win32 {
+  .todo-list-panel {
+    .todo-list-resize-handle {
+      cursor: ew-resize;
+    }
+  }
+}
