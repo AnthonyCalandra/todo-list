@@ -33,7 +33,7 @@ class TodoListView extends ScrollView
 
     editor = atom.workspace.getActiveTextEditor()
     if editor isnt ''
-      editor.scan /^\s*todo:\s*(.*)/gi, (match) =>
+      editor.scan /todo:\s*(.*)/gi, (match) =>
         return if match.match[1] is ''
         numTodo++
         todoList.push {
@@ -51,12 +51,13 @@ class TodoListView extends ScrollView
       for todo in todoList
         todoElement = document.createElement('li')
         todoElement.innerHTML = @createReminderElement(todo.text, todo.line)
-        todoElement.addEventListener 'dblclick', =>
-          editor.setCursorBufferPosition(todo.point)
+        do (todo) ->
+          todoElement.addEventListener 'dblclick', =>
+            editor.setCursorBufferPosition(todo.point)
         @list.append(todoElement)
 
     if editor isnt ''
-      editor.scan /^\s*fixme:\s*(.*)/gi, (match) =>
+      editor.scan /fixme:\s*(.*)/gi, (match) =>
         return if match.match[1] is ''
         numFixme++
         fixmeList.push {
@@ -74,8 +75,9 @@ class TodoListView extends ScrollView
       for fixme in fixmeList
         fixmeElement = document.createElement('li')
         fixmeElement.innerHTML = @createReminderElement(fixme.text, fixme.line)
-        fixmeElement.addEventListener 'dblclick', =>
-          editor.setCursorBufferPosition(fixme.point)
+        do (fixme) ->
+          fixmeElement.addEventListener 'dblclick', =>
+            editor.setCursorBufferPosition(fixme.point)
         @list.append(fixmeElement)
 
   createReminderElement: (text, line) ->
