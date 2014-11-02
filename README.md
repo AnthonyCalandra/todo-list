@@ -1,4 +1,4 @@
-# todo-list - v0.1.1
+# todo-list - v1.0.0
 
 This package keeps track of TODO, FIXME, etc. messages in code.
 
@@ -9,5 +9,5 @@ This package keeps track of TODO, FIXME, etc. messages in code.
  - Resizable Panel
  - Double-click message block to jump to code
  - Left/Right Displayable Panel
- 
+
 Anthony Calandra - 2014
