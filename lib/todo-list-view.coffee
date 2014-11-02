@@ -3,7 +3,7 @@
 module.exports =
 class TodoListView extends ScrollView
   @content: ->
-    @div class: 'todo-list-panel tool-panel', 'data-show-on-right-side': atom.config.get('todo-list.showOnRightSide'), =>
+    @div id: 'todo-list-panel', class: 'tool-panel', 'data-show-on-right-side': atom.config.get('todo-list.showOnRightSide'), =>
       @div class: 'todo-list-scroller', outlet: 'scroller', =>
         @ol class: 'todo-list full-menu list-tree focusable-panel', tabindex: -1, outlet: 'list'
       @div class: 'todo-list-resize-handle', outlet: 'resizeHandle'
@@ -18,12 +18,19 @@ class TodoListView extends ScrollView
       @attach()
       @element.dataset.showOnRightSide = newValue
 
-    editor = atom.workspace.getActiveTextEditor()
-    if editor isnt ''
-      editor.onDidChange =>
-        # Clear previous list first!
-        @list[0].innerHTML = ''
-        @createReminderList()
+    @computedWidth = 200
+    @changeDisposable = null
+    atom.workspace.onDidChangeActivePaneItem (element) =>
+      # Unsubscribe to any events for this particular editor.
+      # At this point we only ever subscribe to onDidStopChanging.
+      if @changeDisposable isnt null
+        @changeDisposable.dispose()
+        @changeDisposable = null
+
+      @handleEditorEvents()
+      @createReminderList()
+
+    @handleEditorEvents()
 
   createReminderList: ->
     numTodo = 0
@@ -31,9 +38,11 @@ class TodoListView extends ScrollView
     todoList = []
     fixmeList = []
 
-    editor = atom.workspace.getActiveTextEditor()
-    if editor isnt ''
-      editor.scan /todo:\s*(.*)/gi, (match) =>
+    # Clear any previous data first.
+    @list[0].innerHTML = ''
+
+    if @editor isnt undefined
+      @editor.scan /todo:\s*(.*)/gi, (match) =>
         return if match.match[1] is ''
         numTodo++
         todoList.push {
@@ -51,13 +60,14 @@ class TodoListView extends ScrollView
       for todo in todoList
         todoElement = document.createElement('li')
         todoElement.innerHTML = @createReminderElement(todo.text, todo.line)
-        do (todo) ->
+        do (@editor, todo) ->
           todoElement.addEventListener 'dblclick', =>
-            editor.setCursorBufferPosition(todo.point)
+            @editor.setCursorBufferPosition(todo.point)
+
         @list.append(todoElement)
 
-    if editor isnt ''
-      editor.scan /fixme:\s*(.*)/gi, (match) =>
+    if @editor isnt undefined
+      @editor.scan /fixme:\s*(.*)/gi, (match) =>
         return if match.match[1] is ''
         numFixme++
         fixmeList.push {
@@ -75,9 +85,10 @@ class TodoListView extends ScrollView
       for fixme in fixmeList
         fixmeElement = document.createElement('li')
         fixmeElement.innerHTML = @createReminderElement(fixme.text, fixme.line)
-        do (fixme) ->
+        do (@editor, fixme) ->
           fixmeElement.addEventListener 'dblclick', =>
-            editor.setCursorBufferPosition(fixme.point)
+            @editor.setCursorBufferPosition(fixme.point)
+
         @list.append(fixmeElement)
 
   createReminderElement: (text, line) ->
@@ -85,10 +96,19 @@ class TodoListView extends ScrollView
     "<span class=\"msg\">#{ text }</span><hr /><span>on line #{ line }</span>"
 
   shortenReminderMsg: (text, maxLength = 30) ->
+    # This equation doesn't really work well for larger widths but it's good enough... :(
+    maxLength = Math.floor((@computedWidth / 10) + 5 * ((@computedWidth - 100) / 100) + 2);
     if text.length >= maxLength
       return text.substring(0, maxLength - 2) + '...'
     else
       return text
+
+  handleEditorEvents: ->
+    @editor = atom.workspace.getActiveTextEditor()
+    if @editor isnt undefined
+      @changeDisposable = @editor.onDidStopChanging =>
+        # Clear previous list first!
+        @createReminderList()
 
   resizeStarted: =>
     $(document).on('mousemove', @resizeTodoList)
@@ -105,7 +125,11 @@ class TodoListView extends ScrollView
     else
       width = pageX
 
+    width = 100 if width < 100
+    @computedWidth = width
     @width(width)
+    # Now update all the messages.
+    @createReminderList()
 
   toggleSide: ->
     atom.config.toggle('todo-list.showOnRightSide')
