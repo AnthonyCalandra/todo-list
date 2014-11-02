@@ -1,7 +1,7 @@
 {
   "name": "todo-list",
   "main": "./lib/todo-list",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "description": "Panel which keeps track of TODO, FIXME, etc. messages in code.",
   "activationEvents": [
     "todo-list:toggle"
