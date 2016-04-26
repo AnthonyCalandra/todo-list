@@ -1,3 +1,5 @@
+# This package is no longer maintained.
+
 # todo-list - v1.0.0
 
 This package keeps track of TODO, FIXME, etc. messages in code.
